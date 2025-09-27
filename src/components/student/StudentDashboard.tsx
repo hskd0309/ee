@@ -2,10 +2,50 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar } from 'recharts';
 import { TrendingUp, TrendingDown, Calendar, CheckCircle, AlertCircle, Smile } from 'lucide-react';
-import { studentData } from '@/data/mockData';
+import { useQuery } from "@tanstack/react-query";
+import { apiClient } from "@/lib/api";
 
 const StudentDashboard: React.FC = () => {
-  const { briScore, attendance, avgMarks, assignmentsOnTime, sentiment, briHistory, attendanceData } = studentData;
+  // First, get the list of students to find a valid student ID
+  const { data: students, isLoading: studentsLoading } = useQuery({
+    queryKey: ['students'],
+    queryFn: () => apiClient.getStudents(),
+  });
+
+  // Use the first student for demo purposes
+  const studentId = students?.[0]?.id;
+
+  const { data: studentSummary, isLoading: summaryLoading, error } = useQuery({
+    queryKey: ['studentSummary', studentId],
+    queryFn: () => apiClient.getStudentSummary(studentId!),
+    enabled: !!studentId, // Only run when we have a valid student ID
+  });
+
+  const isLoading = studentsLoading || summaryLoading;
+
+  if (isLoading) {
+    return (
+      <div className="space-y-8 animate-fade-in">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-800 mb-2">Student Dashboard</h1>
+          <p className="text-gray-600">Loading dashboard data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !studentSummary) {
+    return (
+      <div className="space-y-8 animate-fade-in">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-800 mb-2">Student Dashboard</h1>
+          <p className="text-red-500">Error loading dashboard data. Please try again.</p>
+        </div>
+      </div>
+    );
+  }
+
+  const { bri_score: briScore, attendance, avg_marks: avgMarks, assignments_on_time: assignmentsOnTime, sentiment, bri_history: briHistory, attendance_data: attendanceData, subject_marks: subjectMarks } = studentSummary;
 
   const getBriColor = (score: number) => {
     if (score > 70) return 'text-green-600';
@@ -207,7 +247,7 @@ const StudentDashboard: React.FC = () => {
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={studentData.subjectMarks}>
+            <BarChart data={subjectMarks || []}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="subject" />
               <YAxis />
