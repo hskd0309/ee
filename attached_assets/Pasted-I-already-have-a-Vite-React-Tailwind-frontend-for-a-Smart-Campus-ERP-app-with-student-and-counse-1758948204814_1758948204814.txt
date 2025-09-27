@@ -1,0 +1,53 @@
+I already have a Vite + React + Tailwind frontend for a Smart Campus ERP app with student and counsellor modules. 
+Currently, the frontend only shows dummy values. 
+I need you to generate the backend, database, and ML integration so my frontend works with real data, while keeping the same UI structure.
+
+Details:
+
+1. Database (PostgreSQL or SQLite for demo):
+   - Students: id, name, roll_no, department, gpa, attendance, sentiment_score, burnout_risk
+   - Assignments: id, student_id, title, due_date, status
+   - Tests: id, student_id, subject, score, date
+   - Feedback: id, student_id, text, sentiment_score
+   - CounsellingSessions: id, student_id, counselor_name, date, notes
+
+   Seed database with at least 10 demo students, 20 assignments, 20 test entries, and 5 counselling sessions.
+
+2. Backend (FastAPI or Flask preferred):
+   Expose REST APIs:
+   - GET /students → list of students with burnout_risk
+   - GET /student/{id} → full student profile with GPA, attendance, assignments, tests, feedback, risk
+   - GET /attendance/{id} → attendance history
+   - GET /tests/{id} → test results
+   - GET /assignments/{id} → assignments
+   - GET /counselling/{id} → counselling sessions for student
+   - POST /feedback → accept feedback text, run sentiment analysis, store with sentiment_score
+   - POST /predict → accept JSON {attendance, gpa, sentiment_score}, run ML model, return {risk_score, risk_level, color}
+
+   Enable CORS so my React frontend can fetch these APIs.
+
+3. Machine Learning (scikit-learn):
+   - Use logistic regression or random forest for demo.
+   - Train a small synthetic dataset with features: attendance, gpa, sentiment_score → burnout_risk (0 or 1).
+   - Save as model.pkl and load in backend.
+   - Predict Burnout Risk Index (0–1) + risk_level: Low (<0.3), Medium (0.3–0.7), High (>0.7).
+   - Return also a "color" field: green, yellow, red.
+
+4. Frontend Integration:
+   - Replace dummy data in all student pages with API data:
+     * StudentDashboard → fetch /student/{id}
+     * StudentAttendance → fetch /attendance/{id}
+     * StudentTests → fetch /tests/{id}
+     * StudentAssignments → fetch /assignments/{id}
+     * StudentFeedback → fetch /feedback and allow POST /feedback
+     * StudentGroupChat → keep as frontend but connect with sentiment scoring (optional for now)
+   - Replace dummy data in counsellor pages with API data:
+     * CounsellorDashboard → aggregate risk stats from /students
+     * WellnessReports → fetch risk + sentiment data
+     * StudentReferrals → show high-risk students
+     * CounsellingSessions → fetch from /counselling/{id}
+   - Keep UI layout and components exactly the same, just replace data source.
+
+5. Extra:
+   - Make sure API responses match the dummy fields that frontend currently expects (so integration is smooth).
+   - Add sample charts support: /students endpoint should also return risk distribution summary so frontend chart can display it.

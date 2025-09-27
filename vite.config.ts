@@ -5,13 +5,12 @@ import { componentTagger } from "lovable-tagger";
 
 export default defineConfig(({ mode }) => ({
   server: {
-    host: "::",
-    port: 8080,
+    host: "0.0.0.0",
+    port: 5000,
   },
   preview: {
-    host: "0.0.0.0",                                // required for Render
-    port: parseInt(process.env.PORT || "4173"),     // use Render's PORT
-    allowedHosts: ["smart-campus-erp-5hll.onrender.com"], // match your Render domain
+    host: "0.0.0.0",
+    port: 5000,
   },
   plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
   resolve: {
